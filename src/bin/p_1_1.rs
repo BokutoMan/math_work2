@@ -1,8 +1,7 @@
 use my_fraction::Fraction;
-
 const N:usize = 3;
 
-// 输出分数数组
+/// 输出分数数组
 fn print_fraction_array(name:&str,an:&[[Fraction;N+1];N]){
     println!("{name}:");
     print!("[\n");
@@ -15,7 +14,7 @@ fn print_fraction_array(name:&str,an:&[[Fraction;N+1];N]){
     }
     print!("]\n");
 }
-// 将整数数组转换为分数数组
+/// 将整数数组转换为分数数组
 fn get_fraction_array(an:[[i32;N+1];N])->[[Fraction;N+1];N]{
     let mut kn:[[Fraction;N+1];N] = [[Fraction::from_i32(0);N+1];N];
     for i in 0..N{
@@ -25,7 +24,7 @@ fn get_fraction_array(an:[[i32;N+1];N])->[[Fraction;N+1];N]{
     }
     kn
 }
-// 高斯消元，k为消元的行
+/// 高斯消元，k为消元的行
 fn gaussian_elimination(k:usize,  an:&mut [[Fraction;N+1];N]){
     //将an(k,k)化为一
     let ankk = an[k][k];
@@ -42,7 +41,7 @@ fn gaussian_elimination(k:usize,  an:&mut [[Fraction;N+1];N]){
     }
 }
 
-//验证函数
+///验证函数
 fn validate(an:[[Fraction;N+1];N],x:[[Fraction;1];N])->[[Fraction;1];N]{
     let mut bn = [[Fraction::from_i32(0);1];N];
     for i in 0..N{
@@ -54,7 +53,7 @@ fn validate(an:[[Fraction;N+1];N],x:[[Fraction;1];N])->[[Fraction;1];N]{
     }
     bn
 }
-// 回代函数
+/// 回代函数
 fn generating(an:&mut [[Fraction;N+1];N]){
     //从最后一列开始，将每一列变为只有0和一的
     let zero = Fraction::from_i32(0);
@@ -67,7 +66,7 @@ fn generating(an:&mut [[Fraction;N+1];N]){
         }
     }
 }
-// 根据矩阵获取结果
+/// 根据矩阵获取结果
 fn get_result(an:[[Fraction;N+1];N])->[[Fraction;1];N]{
     let mut cn = [[Fraction::from_i32(0);1];N];
     for i in 0..N{
@@ -82,17 +81,23 @@ fn main(){
         [-2,10,-1,15],
         [-1,-2,5,10]
     ];
+    // 转为分数矩阵
     let mut xishu = get_fraction_array(num);
-    let liubei = xishu.clone();
+    // 备份一份验证时用
+    let backup = xishu.clone();
+    // 对每一行分别使用高斯消元
     for i in 0..N{
         gaussian_elimination(i, &mut xishu);
-        print_fraction_array("替换后",&xishu);
+        print!("第{}行", i+1);
+        print_fraction_array("替换后矩阵为",&xishu);
     }
+    // 回代
     generating(&mut xishu);
-    print_fraction_array("结果", &xishu);
-    let kk = get_result(xishu);
-    println!("{:?}",kk);
-    print_fraction_array("liubei", &liubei);
-    let cc = validate(liubei,kk);
-    println!("{:?}",cc)
+    print_fraction_array("回代后的结果矩阵为：", &xishu);
+    // 获取结果向量xn
+    let xn = get_result(xishu);
+    println!("xn = {:?}",xn);
+    // 验证结果
+    let result = validate(backup,xn);
+    println!("带入计算结果得到：{:?}",result)
 }

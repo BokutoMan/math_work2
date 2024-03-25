@@ -100,6 +100,12 @@ impl Fraction {
         }
         Some(Fraction::new(numerator, denominator, positive))
     }
+    pub fn is_int(&self)->bool{
+        return self.numerator%self.denominator == 0
+    }
+    pub fn get_int(&self)->i32{
+        return (self.numerator/self.denominator) as i32 * if self.positive {1} else {-1}
+    }
 }
 
 
