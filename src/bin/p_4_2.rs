@@ -40,15 +40,47 @@ fn get_fraction_array(an:[[i32;N+1];N])->[[Fraction;N+1];N]{
     }
     kn
 }
-fn get_an_bn_cn(an:&[[Fraction;N+1];N])->[[Fraction;N];3]{
-    
-}
-/// 追赶法求解
-fn catch_up(Beta:&mut [Fraction;N], an:&mut [[Fraction;N+1];N]){
-    Beta[0] = 
+/// 直接分解法,k 为当前分解的U的行和L的列
+fn direct_decomposition(k:usize,  an:&mut [[Fraction;N+1];N]){
+    // 计算第一行和第一列
+    if k == 0 {
+        for i in 1..N{
+            an[i][0] = an[i][0]/an[0][0];
+        }
+        return
+    }
+    // 计算第k行元素
+    for j in k..N{
+        let mut c = Fraction::from_i32(0);
+        for i in 0..k{
+            c = c + an[k][i]*an[i][j];
+        }
+        an[k][j] = an[k][j] - c;
+    }
+    // 计算第 k 列元素
+    for i in k+1..N{
+        let mut c = Fraction::from_i32(0);
+        for j in 0..k{
+            c = c + an[i][j]*an[j][k];
+        }
+        an[i][k] = (an[i][k] - c)/an[k][k];
+    }
 }
 
-fn calculate_y()
+///根据聚合矩阵得到L 和 U 
+fn get_l_and_u(ln:&mut [[Fraction;N+1];N],un:&mut [[Fraction;N+1];N],an:&[[Fraction;N+1];N]){
+    for i in 0..N{
+        ln[i][i] = Fraction::from_i32(1);
+        for j in 0..i{
+            ln[i][j] = an[i][j]
+        }
+        for j in i..N{
+            un[i][j] = an[i][j]
+        }
+        ln[i][N] = an[i][N];
+        un[i][N] = an[i][N];
+    }
+}
 
 ///验证函数
 fn validate(an:& [[Fraction;N+1];N],x:&[Fraction;N])->[Fraction;N]{
@@ -62,7 +94,35 @@ fn validate(an:& [[Fraction;N+1];N],x:&[Fraction;N])->[Fraction;N]{
     }
     bn
 }
-
+/// 计算y
+fn calculate_y(ln:& [[Fraction;N+1];N])->[Fraction;N]{
+    let mut yn = [Fraction::from_i32(0);N];
+    yn[0] = ln[0][N];
+    // 计算剩下的y值
+    for i in 1..N{
+        let mut c = Fraction::from_i32(0);
+        for j in 0..i{
+            c = c + ln[i][j]*yn[j];
+        }
+        yn[i] = ln[i][N] - c;
+    }
+    yn
+}
+/// 计算x
+fn calculate_x(un:& [[Fraction;N+1];N], yn:& [Fraction;N])->[Fraction;N]{
+    let mut xn = [Fraction::from_i32(0);N];
+    xn[N-1] = yn[N-1]/un[N-1][N-1];
+    // 计算剩下的x
+    for i in 0..N-1{
+        let i = N - 2- i;
+        let mut c = Fraction::from_i32(0);
+        for j in i+1..N{
+            c = c + un[i][j]*xn[j];
+        }
+        xn[i] = (yn[i] - c)/un[i][i];
+    }
+    xn
+}
 
 fn main(){
     let num = [
